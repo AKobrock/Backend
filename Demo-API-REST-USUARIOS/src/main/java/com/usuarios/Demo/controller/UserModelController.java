@@ -51,7 +51,7 @@ public class UserModelController {
             existingUserModel.setPassword(user.getPassword());
         }
         
-        return entity;
+        return existingUserModel;
     }
 
     
