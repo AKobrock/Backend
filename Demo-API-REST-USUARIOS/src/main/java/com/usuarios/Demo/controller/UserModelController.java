@@ -44,8 +44,8 @@ public class UserModelController {
     }
     
 
-    @PutMapping("users/{id}")
-    public UserModel ActualizarUser(@PathVariable UUID id, @RequestBody UserModel user) {
+    @PutMapping("/users/{id}")
+    public UserModel actualizarUser(@PathVariable UUID id, @RequestBody UserModel user) {
         UserModel existingUserModel =  userModelService.getUserId(id);
         if (existingUserModel != null){
             existingUserModel.setPassword(user.getPassword());
