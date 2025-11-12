@@ -23,21 +23,16 @@ public class AdminModelService {
     }
 
     public List<AdminModel> getAllAdmins() {
-    List<AdminModel> admins = adminModelRepository.findAll();
-    if (admins.isEmpty()) {
+    List<AdminModel> admin = adminModelRepository.findAll();
+    if (admin.isEmpty()) {
         throw new EntityNotFoundException("No existen administradores registrados en el sistema.");
     }
-    return admins;
+    return admin;
 }
 
     public AdminModel getAdminId(UUID id) {
-    Optional<AdminModel> admin = adminModelRepository.findById(id);
-    if (admin.isEmpty()) {
-        System.out.println("No existe el admin con ID " + id);
-        return null;
+        return adminModelRepository.findById(id).orElse(null);
     }
-    return admin.get();
-}
 
 
     public AdminModel CreateAdmin(AdminModel admin){
@@ -48,8 +43,8 @@ public class AdminModelService {
         return adminModelRepository.save(admin);
     }
 
-    public AdminModel ActualizarAdmin(AdminModel admin){
-        Optional<AdminModel> existeAdmin = adminModelRepository.findById(admin.getId());
+    public AdminModel ActualizarAdmin(UUID id,AdminModel admin){
+        Optional<AdminModel> existeAdmin = adminModelRepository.findById(id);
         if (existeAdmin.isEmpty()){
             throw new EntityNotFoundException("El admin con ID " + admin.getId() + " no existe :(");
         }
@@ -82,4 +77,3 @@ public class AdminModelService {
     }
 }
 
-//Poner validaciones aquí!
