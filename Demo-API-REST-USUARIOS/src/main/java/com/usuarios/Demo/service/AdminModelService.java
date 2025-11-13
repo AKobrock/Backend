@@ -6,8 +6,8 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 import com.usuarios.Demo.model.AdminModel;
+import com.usuarios.Demo.model.UserModel;
 import com.usuarios.Demo.repository.IAdminModelRepository;
-
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -23,12 +23,12 @@ public class AdminModelService {
     }
 
     public List<AdminModel> getAllAdmins() {
-    List<AdminModel> admin = adminModelRepository.findAll();
-    if (admin.isEmpty()) {
+        List<AdminModel> admin = adminModelRepository.findAll();
+        if (admin.isEmpty()) {
         throw new EntityNotFoundException("No existen administradores registrados en el sistema.");
-    }
+        }
     return admin;
-}
+    }
 
     public AdminModel getAdminId(UUID id) {
         return adminModelRepository.findById(id).orElse(null);
@@ -51,12 +51,12 @@ public class AdminModelService {
 
         AdminModel adminActual = existeAdmin.get();
 
-        if(admin.getPassword() !=null && !admin.getEmail().isEmpty()){
+        if(admin.getPassword() !=null && !admin.getPassword().isEmpty()){
             adminActual.setEmail(admin.getPassword());
         }
 
         if(admin.getEmail() != null && !admin.getEmail().isEmpty()){
-            adminActual.setEmail((admin.getEmail()));
+            adminActual.setEmail(admin.getEmail());
         }
 
         if(admin.getAddress() != null && admin.getAddress().isEmpty()){
@@ -72,8 +72,16 @@ public class AdminModelService {
     /*Usamos optional para evitar errores de tipo nullPinterException(cuadno intentamos
       entrar en un objeto que es null) */
 
-    public void matarAdmin(UUID id){
+    public String matarAdmin(UUID id){
+        Optional<AdminModel> existeAdmin = adminModelRepository.findById(id);
+        if(existeAdmin.isEmpty()){
+            throw new EntityNotFoundException("No se ha encontrado al administrador de ID " +id );
+        }
+        AdminModel admin = existeAdmin.get();
         adminModelRepository.deleteById(id);
+
+        return "Se ha eliminado al admimistrador: " + admin.getUsername() + " " + admin.getLastname() + ", de ID: " + admin.getId();
+
     }
 }
 
