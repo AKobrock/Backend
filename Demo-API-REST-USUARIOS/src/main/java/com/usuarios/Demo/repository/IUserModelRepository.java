@@ -7,6 +7,5 @@ import com.usuarios.Demo.model.UserModel;
 
 @Repository
 public interface IUserModelRepository extends JpaRepository<UserModel, UUID> {
-
     
 } 

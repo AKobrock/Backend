@@ -2,18 +2,10 @@ package com.usuarios.Demo.controller;
 
 import java.util.List;
 import java.util.UUID;
-
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import com.usuarios.Demo.dto.ApiResponse;
 import com.usuarios.Demo.model.AdminModel;
 import com.usuarios.Demo.service.AdminModelService;
 import jakarta.persistence.EntityExistsException;
@@ -24,60 +16,95 @@ import jakarta.persistence.EntityNotFoundException;
 public class AdminModelController {
 
     private final AdminModelService adminModelService;
-    public AdminModelController(AdminModelService adminModelService){
+    public AdminModelController(AdminModelService adminModelService) {
         this.adminModelService = adminModelService;
     }
 
-    @GetMapping("/")
-    public ResponseEntity<?> getAllAdmins(){
+/*Buscamos a todos los administradores que hayan */
+    @GetMapping
+    public ResponseEntity<?> getAllAdmins() {
         try {
-            List<AdminModel> admin = adminModelService.getAllAdmins();
-            return ResponseEntity.ok(admin);
+            List<AdminModel> admins = adminModelService.getAllAdmins();
+            return ResponseEntity.ok(
+                new ApiResponse<>("OK", "Lista de administradores obtenida correctamente", admins)
+            );
         } catch (EntityNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No se encuentran administradores en el servidor.");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ApiResponse<>("ERROR", e.getMessage(), null));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(" Error inesperado al crear el admin.");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ApiResponse<>("ERROR", "Error inesperado al obtener administradores", null));
         }
     }
 
-    @GetMapping("/admins/{id}")
-    public ResponseEntity<?> getAdminId(@RequestParam UUID id){
-        AdminModel existingAdminModel = adminModelService.getAdminId(id);
-        if(existingAdminModel != null){
-            return ResponseEntity.ok(existingAdminModel);
-        }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No se encontró administrador de id" + id);
-    }
-
-    @PostMapping("/admins")
-    public ResponseEntity<?> createAdmin(@RequestBody AdminModel admin){
-         try {
-            AdminModel nuevoAdmin = adminModelService.CreateAdmin(admin);
-            return ResponseEntity.status(HttpStatus.CREATED).body(nuevoAdmin); // 201 Created
-        } 
-        catch (EntityExistsException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT) // 409 Conflict
-                    .body(" Error: " + e.getMessage());
-        } 
-        catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST) //ERROR 400 
-                    .body(" Error inesperado al crear el admin.");
-        }
-    }
-
-    @PutMapping("/admins/{id}")
-    public ResponseEntity<?> actualizarAdmin(@PathVariable UUID id, @RequestBody AdminModel admin){
+/*Buscamos un administrador por su id */
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getAdminId(@PathVariable UUID id) {
         try {
-            AdminModel existingAdminModel = adminModelService.ActualizarAdmin(id,admin);
-            return ResponseEntity.status(HttpStatus.OK).body(existingAdminModel);
-        } 
-        catch (EntityNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("mensaje");
+            AdminModel admin = adminModelService.getAdminId(id);
+            if (admin == null) {
+                throw new EntityNotFoundException("Administrador no encontrado con ID " + id);
+            }
+            return ResponseEntity.ok(
+                new ApiResponse<>("OK", "Administrador encontrado", admin)
+            );
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ApiResponse<>("ERROR", e.getMessage(), null));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ApiResponse<>("ERROR", "Error inesperado al buscar el administrador", null));
         }
-        catch (Exception e){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error inesperado al crear el admin.");
-        }
-        
     }
 
+/*Creamos un administrador */
+    @PostMapping
+    public ResponseEntity<?> createAdmin(@RequestBody AdminModel admin) {
+        try {
+            AdminModel nuevoAdmin = adminModelService.CreateAdmin(admin);
+            return ResponseEntity.status(HttpStatus.CREATED)
+                .body(new ApiResponse<>("OK", "Administrador creado correctamente", nuevoAdmin));
+        } catch (EntityExistsException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(new ApiResponse<>("ERROR", e.getMessage(), null));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ApiResponse<>("ERROR", "Error inesperado al crear el administrador", null));
+        }
+    }
+
+/*Actualizamos al administrador */
+    @PutMapping("/{id}")
+    public ResponseEntity<?> actualizarAdmin(@PathVariable UUID id, @RequestBody AdminModel admin) {
+        try {
+            AdminModel actualizado = adminModelService.ActualizarAdmin(id, admin);
+            return ResponseEntity.ok(
+                new ApiResponse<>("OK", "Administrador actualizado correctamente", actualizado)
+            );
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ApiResponse<>("ERROR", e.getMessage(), null));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ApiResponse<>("ERROR", "Error inesperado al actualizar el administrador", null));
+        }
+    }
+
+/*Eliminamos al administrador a travez de su id */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> matarAdmin(@PathVariable UUID id) {
+        try {
+            String mensaje = adminModelService.matarAdmin(id);
+            return ResponseEntity.ok(
+                new ApiResponse<>("OK", mensaje, null)
+            );
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ApiResponse<>("ERROR", e.getMessage(), null));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ApiResponse<>("ERROR", "Error inesperado al eliminar el administrador", null));
+        }
+    }
 }
+

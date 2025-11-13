@@ -6,7 +6,6 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 import com.usuarios.Demo.model.AdminModel;
-import com.usuarios.Demo.model.UserModel;
 import com.usuarios.Demo.repository.IAdminModelRepository;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;

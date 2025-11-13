@@ -33,7 +33,7 @@ public class UserModelService {
         return userModelRepository.findById(id).orElse(null);
     }
 
-    public UserModel CreateUser(UserModel user){
+    public UserModel createUser(UserModel user){
         Optional<UserModel> existeUser = userModelRepository.findById(user.getId());
         if (existeUser.isPresent()){
             throw new EntityExistsException("El usuario con ID " + user.getId() + " ya existe." );
@@ -41,7 +41,7 @@ public class UserModelService {
         return userModelRepository.save(user);
     }
 
-    public UserModel ActualziarUser(UUID id, UserModel user){
+    public UserModel actualizarUser(UUID id, UserModel user){
         Optional<UserModel> existeUser = userModelRepository.findById(id);
         if (existeUser.isEmpty()){
             throw new EntityNotFoundException("El usuario con ID " + user.getId() + " no existe.");

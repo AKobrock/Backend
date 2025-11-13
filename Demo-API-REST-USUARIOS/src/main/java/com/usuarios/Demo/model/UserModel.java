@@ -20,7 +20,7 @@ public class UserModel {
 //Representa nuestra identidad en la base de datos
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private UUID id; //recuerda revisar que es bien
+    private UUID id; 
     private String username;
     private String lastname;
     private String rut;
