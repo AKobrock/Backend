@@ -1,0 +1,207 @@
+package com.usuarios.Demo.controller;
+
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import com.usuarios.Demo.model.UserModel;
+import com.usuarios.Demo.service.UserModelService;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+
+
+import com.usuarios.Demo.dto.APIResponse;
+
+import jakarta.persistence.EntityExistsException;
+import jakarta.persistence.EntityNotFoundException;
+
+@RestController
+@RequestMapping("/api/v1/users")
+public class UserModelController {
+
+    private final UserModelService userModelService;
+
+    public UserModelController(UserModelService userModelService) {
+        this.userModelService = userModelService;
+    }
+
+/*Buscamos toods los usuairos */
+
+    @Operation(summary = "Obtiene todos los usuarios.", description = "Devuelve todos los usuarios si que existen.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "¡Usuarios obtenidos correctamente!"),
+        @ApiResponse(responseCode = "404", description = "No hay usuarios"),
+        @ApiResponse(responseCode = "500", description = "El server se muricio")
+    })
+
+    @GetMapping
+    public ResponseEntity<APIResponse<List<UserModel>>> getAllUsers() {
+        try {
+            List<UserModel> users = userModelService.getAllUsers();
+            return ResponseEntity.ok(
+                new APIResponse<>("OK", "Usuarios obtenidos correctamente", users)
+            );
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                new APIResponse<>("ERROR", e.getMessage(), null)
+            );
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                new APIResponse<>("ERROR", "Error inesperado al obtener los usuarios", null)
+            );
+        }
+    }
+
+
+/*Buscmaos al usuario por id */
+    @Operation(summary = "Obtiene un usuario segun su ID.", description = "Devuelve al usuario si es que existe.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "¡Usuario obtenido correctamente!"),
+        @ApiResponse(responseCode = "404", description = "No hay usuarios"),
+        @ApiResponse(responseCode = "500", description = "El server ta muertecido")
+    })
+
+    @GetMapping("/{id}")
+    public ResponseEntity<APIResponse<UserModel>> getUserById(@PathVariable UUID id) {
+        UserModel user = userModelService.getUserId(id);
+        if (user != null) {
+            return ResponseEntity.ok(
+                new APIResponse<>("OK", "Usuario encontrado", user)
+            );
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                new APIResponse<>("ERROR", "Usuario con ID " + id + " no encontrado", null)
+            );
+        }
+    }
+
+/*Creamos un usuario */
+    @Operation(summary = "Crea un usuario nuevo.", description = "Devuelve al usuario si es que se creo.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "201", description = "¡Usuario se ha creado correctamente!"),
+        @ApiResponse(responseCode = "404", description = "No se pudo crear al usuario"),
+        @ApiResponse(responseCode = "500", description = "El server ta entero muerto")
+    })
+    @PostMapping
+    public ResponseEntity<APIResponse<UserModel>> createUser(@RequestBody UserModel user) {
+        try {
+            UserModel nuevoUser = userModelService.createUser(user);
+            return ResponseEntity.status(HttpStatus.CREATED).body(
+                new APIResponse<>("OK", "Usuario creado correctamente", nuevoUser)
+            );
+        } catch (EntityExistsException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(
+                new APIResponse<>("ERROR", e.getMessage(), null)
+            );
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                new APIResponse<>("ERROR", "Error inesperado al crear el usuario", null)
+            );
+        }
+    }
+
+/*Actualizamos al user usando su id */
+    @PutMapping("/{id}")
+    public ResponseEntity<APIResponse<UserModel>> actualizarUser(@PathVariable UUID id, @RequestBody UserModel user) {
+        try {
+            UserModel updatedUser = userModelService.actualizarUser(id, user);
+            return ResponseEntity.ok(
+                new APIResponse<>("OK", "Usuario actualizado correctamente", updatedUser)
+            );
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                new APIResponse<>("ERROR", e.getMessage(), null)
+            );
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                new APIResponse<>("ERROR", "Error inesperado al actualizar el usuario", null)
+            );
+        }
+    }
+
+    /*Mostramos los usuarios activos */
+    @GetMapping("/active")
+    public ResponseEntity<APIResponse<List<UserModel>>> mostrarUsuariosActivos() {
+        try {
+            List<UserModel> users = userModelService.mostrarUsuariosActivos();
+            return ResponseEntity.ok(
+                new APIResponse<>("OK", "Usuarios activos obtenidos correctamente", users)
+            );
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                new APIResponse<>("ERROR", e.getMessage(), null)
+            );
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                new APIResponse<>("ERROR", "Error al obtener los usuarios activos", null)
+            );
+        }
+    }
+
+    /*Mostramos los usuarios inactivos */
+    @GetMapping("/inactive")
+    public ResponseEntity<APIResponse<List<UserModel>>> mostrarUsuariosInactivos() {
+        try {
+            List<UserModel> users = userModelService.mostrarUsuariosInactivos();
+            return ResponseEntity.ok(
+                new APIResponse<>("OK", "Usuarios inactivos obtenidos correctamente", users)
+            );
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                new APIResponse<>("ERROR", e.getMessage(), null)
+            );
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                new APIResponse<>("ERROR", "Error al obtener los usuarios inactivos", null)
+            );
+        }
+    }
+
+    /*Reactivamos los usuarios en el controller */
+    @PutMapping("/{id}/reactivar")
+    public ResponseEntity<APIResponse<UserModel>> reactivarUsuario(@PathVariable UUID id) {
+        try {
+            UserModel userReactivado = userModelService.reactivarUsuario(id);
+            return ResponseEntity.ok(
+                new APIResponse<>("OK", "Usuario reactivado correctamente", userReactivado)
+            );
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                new APIResponse<>("ERROR", e.getMessage(), null)
+            );
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(
+                new APIResponse<>("ERROR", e.getMessage(), null)
+            );
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                new APIResponse<>("ERROR", "Error inesperado al reactivar el usuario", null)
+            );
+        }
+    }
+
+/*Borramos usuarios */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<APIResponse<String>> deleteUser(@PathVariable UUID id) {
+        try {
+            String mensaje = userModelService.matarUser(id);
+            return ResponseEntity.ok(
+                new APIResponse<>("OK", mensaje, null)
+            );
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                new APIResponse<>("ERROR", e.getMessage(), null)
+            );
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                new APIResponse<>("ERROR", "Error inesperado al eliminar el usuario", null)
+            );
+        }
+    }
+}
+
