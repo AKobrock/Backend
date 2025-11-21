@@ -18,7 +18,7 @@ import jakarta.persistence.EntityNotFoundException;
 
 @RestController
 @RequestMapping("/api/v1/reservas")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "*", allowCredentials = "false")
 public class ReservaController {
 
     private final ReservaService reservaService;

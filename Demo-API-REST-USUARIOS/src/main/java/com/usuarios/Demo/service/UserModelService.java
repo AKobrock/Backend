@@ -45,20 +45,23 @@ public class UserModelService {
     }
 
     public UserModel createUser(UserModel user) {
-        if (user.getId() != null && userModelRepository.findById(user.getId()).isPresent()) {
-            throw new EntityExistsException("El usuario con ID " + user.getId() + " ya existe.");
-        }
-
-        user.setActive(true);
-        user.setLastActivity(LocalDateTime.now()); // Seteamos esto como su primera actividad dentro de la cuenta.
-        
-        UserModel nuevo = userModelRepository.save(user);
-
-        // Enviar correo de bienvenida
-        emailService.enviarCorreoBienvenida(nuevo.getEmail(), nuevo.getUsername());
-
-        return nuevo;
+    if (user.getId() != null && userModelRepository.findById(user.getId()).isPresent()) {
+        throw new EntityExistsException("El usuario con ID " + user.getId() + " ya existe.");
     }
+
+    user.setActive(true);
+    user.setLastActivity(LocalDateTime.now()); // Primera actividad
+    UserModel nuevo = userModelRepository.save(user);
+
+    // Enviar correo de bienvenida (sin romper si falla)
+    try {
+        emailService.enviarCorreoBienvenida(nuevo.getEmail(), nuevo.getUsername());
+    } catch (Exception e) {
+        System.err.println("⚠️ Error al enviar correo: " + e.getMessage());
+    }
+
+    return nuevo;
+}
 
     public UserModel actualizarUser(UUID id, UserModel user) {
         Optional<UserModel> existeUser = userModelRepository.findById(id);
