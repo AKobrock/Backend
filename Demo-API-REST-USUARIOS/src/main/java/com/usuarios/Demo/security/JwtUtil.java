@@ -1,61 +1,99 @@
 package com.usuarios.Demo.security;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
-import java.util.function.Function;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import com.usuarios.Demo.model.AdminModel;
+import com.usuarios.Demo.model.UserModel;
+
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
+
+import javax.crypto.SecretKey;
 
 @Component
 public class JwtUtil {
 
-    @Value("${jwt.secret}")
+    @Value("${app.jwt.secret}")
     private String secret;
 
-    @Value("${jwt.expiration}")
-    private long expiration; // milisegundos
+    @Value("${app.jwt.expiration}")
+    private long expirationMs;
 
-    public String generateToken(String subject, String rol) {
+    private SecretKey getSigningKey() {
+        return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+    }
+
+    /** ================================
+     * 🔐 TOKEN PARA ADMIN
+     * ================================= */
+    public String generateToken(AdminModel admin) {
+        return buildToken(
+                admin.getEmail(),
+                "ADMIN"
+        );
+    }
+
+    /** ================================
+     * 👤 TOKEN PARA USUARIO NORMAL
+     * ================================= */
+    public String generateToken(UserModel user) {
+        return buildToken(
+                user.getEmail(),
+                "USER"
+        );
+    }
+
+    /** ================================
+     * 🧬 MÉTODO GENÉRICO PARA CREAR TOKENS
+     * ================================= */
+    private String buildToken(String email, String role) {
+        Date now = new Date();
+        Date expiry = new Date(now.getTime() + expirationMs);
+
         return Jwts.builder()
-                .setSubject(subject)
-                .claim("rol", rol)
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + expiration))
-                .signWith(SignatureAlgorithm.HS256, secret)
+                .setSubject(email)
+                .claim("rol", role) // ← ojo! aquí SI es "rol"
+                .setIssuedAt(now)
+                .setExpiration(expiry)
+                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
+    // ===============================
+    // 📌 OBTENER CAMPOS DEL TOKEN
+    // ===============================
+
     public String getUsernameFromToken(String token) {
-        return getClaimFromToken(token, Claims::getSubject);
+        return getAllClaims(token).getSubject();
     }
 
     public String getRolFromToken(String token) {
-        Claims claims = getAllClaimsFromToken(token);
-        return claims.get("rol", String.class);
+        return getAllClaims(token).get("rol", String.class); // ← estaba "roll"
     }
+
+    // ===============================
+    // 📌 VALIDAR TOKEN
+    // ===============================
 
     public boolean isTokenValid(String token) {
         try {
-            Claims claims = getAllClaimsFromToken(token);
-            return !claims.getExpiration().before(new Date());
+            return getAllClaims(token).getExpiration().after(new Date());
         } catch (Exception e) {
             return false;
         }
     }
 
-    private Claims getAllClaimsFromToken(String token) {
-        return Jwts.parser()
-                .setSigningKey(secret)
+    private Claims getAllClaims(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(getSigningKey())
+                .build()
                 .parseClaimsJws(token)
                 .getBody();
-    }
-
-    private <T> T getClaimFromToken(String token, Function<Claims, T> claimsResolver) {
-        Claims claims = getAllClaimsFromToken(token);
-        return claimsResolver.apply(claims);
     }
 }

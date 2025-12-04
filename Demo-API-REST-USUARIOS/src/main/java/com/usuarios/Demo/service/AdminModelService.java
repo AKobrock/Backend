@@ -6,10 +6,8 @@ import java.util.UUID;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
 import com.usuarios.Demo.model.AdminModel;
 import com.usuarios.Demo.repository.IAdminModelRepository;
-
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -20,7 +18,7 @@ import jakarta.transaction.Transactional;
 public class AdminModelService {
 
     private final IAdminModelRepository adminModelRepository;
-    private final PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder; // 🔹 nuevo
 
     public AdminModelService(IAdminModelRepository adminModelRepository,
                              PasswordEncoder passwordEncoder) {
@@ -34,13 +32,16 @@ public class AdminModelService {
             throw new EntityExistsException("El administrador con ID " + admin.getId() + " ya existe.");
         }
 
+        // Asignar rol automáticamente
         admin.setRol("ADMIN");
-        admin.setPassword(passwordEncoder.encode(admin.getPassword()));
+
+        // 🔐 Encriptar password antes de guardar
+        if (admin.getPassword() != null) {
+            admin.setPassword(passwordEncoder.encode(admin.getPassword()));
+        }
 
         return adminModelRepository.save(admin);
     }
-
-    
 
 
     /* Obtener todos los administradores */

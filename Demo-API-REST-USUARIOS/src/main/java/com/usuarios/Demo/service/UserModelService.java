@@ -33,24 +33,52 @@ public class UserModelService {
     }
 
     public UserModel createUser(UserModel user) {
-        if (user.getId() != null && userModelRepository.findById(user.getId()).isPresent()) {
-            throw new EntityExistsException("El usuario con ID " + user.getId() + " ya existe.");
-        }
 
-        user.setActive(true);
-        user.setLastActivity(LocalDateTime.now());
-        user.setPassword(passwordEncoder.encode(user.getPassword())); // ⬅ encriptar
-
-        UserModel nuevo = userModelRepository.save(user);
-
-        try {
-            emailService.enviarCorreoBienvenida(nuevo.getEmail(), nuevo.getUsername());
-        } catch (Exception e) {
-            System.err.println("⚠️ Error al enviar correo: " + e.getMessage());
-        }
-
-        return nuevo;
+    // VALIDACIONES
+    if (user.getUsername() == null || user.getUsername().isBlank()) {
+        throw new IllegalArgumentException("El nombre es obligatorio");
     }
+    if (user.getLastname() == null || user.getLastname().isBlank()) {
+        throw new IllegalArgumentException("El apellido es obligatorio");
+    }
+    if (user.getRut() == null || user.getRut().isBlank()) {
+        throw new IllegalArgumentException("El RUT es obligatorio");
+    }
+    if (user.getEmail() == null || user.getEmail().isBlank()) {
+        throw new IllegalArgumentException("El email es obligatorio");
+    }
+    if (user.getPassword() == null || user.getPassword().isBlank()) {
+        throw new IllegalArgumentException("La contraseña es obligatoria");
+    }
+
+    // VALIDAR EMAIL DUPLICADO
+    if (userModelRepository.findByEmail(user.getEmail()).isPresent()) {
+        throw new EntityExistsException("El correo ya está registrado");
+    }
+
+    // CONFIGURACIONES AUTOMÁTICAS
+    user.setActive(true);
+    user.setLastActivity(LocalDateTime.now());
+    
+    //Setea el rol
+    user.setRol("USER");
+
+    // ENCRIPTAR CONTRASEÑA
+    user.setPassword(passwordEncoder.encode(user.getPassword()));
+
+    // GUARDAR
+    UserModel nuevo = userModelRepository.save(user);
+
+    // Enviar correo
+    try {
+        emailService.enviarCorreoBienvenida(nuevo.getEmail(), nuevo.getUsername());
+    } catch (Exception e) {
+        System.err.println("⚠️ Error al enviar correo: " + e.getMessage());
+    }
+
+    return nuevo;
+}
+
 
     public List<UserModel> getAllUsers() {
         List<UserModel> users = userModelRepository.findAll();

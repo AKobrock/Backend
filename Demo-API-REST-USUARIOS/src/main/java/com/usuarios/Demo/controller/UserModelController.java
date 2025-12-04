@@ -82,7 +82,7 @@ public class UserModelController {
         @ApiResponse(responseCode = "404", description = "No se pudo crear al usuario."),
         @ApiResponse(responseCode = "500", description = "El server ta entero muerto.")
     })
-    @PostMapping
+    @PostMapping("/register")
     public ResponseEntity<APIResponse<UserModel>> createUser(@RequestBody UserModel user) {
         try {
             UserModel nuevoUser = userModelService.createUser(user);

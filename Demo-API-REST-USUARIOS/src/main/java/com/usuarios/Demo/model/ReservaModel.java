@@ -28,7 +28,7 @@ public class ReservaModel {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "papa_id", referencedColumnName = "id", nullable = false)
     private PapaModel papa;
-
+    private String email;
     private LocalDate fechaReserva;
     private LocalDate fechaVisita;
     private String estado;

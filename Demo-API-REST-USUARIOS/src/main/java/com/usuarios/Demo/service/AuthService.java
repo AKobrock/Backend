@@ -45,7 +45,7 @@ public class AuthService {
             throw new IllegalArgumentException("Credenciales inválidas");
         }
 
-        String token = jwtUtil.generateToken(admin.getEmail(), "ADMIN");
+        String token = jwtUtil.generateToken(admin);
 
         return new AuthResponse<>(token, "ADMIN", admin);
     }
@@ -60,7 +60,7 @@ public class AuthService {
             throw new IllegalArgumentException("Credenciales inválidas");
         }
 
-        String token = jwtUtil.generateToken(user.getEmail(), "USER");
+        String token = jwtUtil.generateToken(user);
 
         return new AuthResponse<>(token, "USER", user);
     }
