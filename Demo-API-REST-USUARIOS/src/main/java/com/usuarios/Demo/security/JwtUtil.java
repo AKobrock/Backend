@@ -29,9 +29,9 @@ public class JwtUtil {
         return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
 
-    /** ================================
-     * 🔐 TOKEN PARA ADMIN
-     * ================================= */
+    
+     // TOKEN PARA ADMIN
+     
     public String generateToken(AdminModel admin) {
         return buildToken(
                 admin.getEmail(),
@@ -39,9 +39,9 @@ public class JwtUtil {
         );
     }
 
-    /** ================================
-     * 👤 TOKEN PARA USUARIO NORMAL
-     * ================================= */
+
+    //TOKEN PARA USUARIO NORMAL
+
     public String generateToken(UserModel user) {
         return buildToken(
                 user.getEmail(),
@@ -49,9 +49,8 @@ public class JwtUtil {
         );
     }
 
-    /** ================================
-     * 🧬 MÉTODO GENÉRICO PARA CREAR TOKENS
-     * ================================= */
+
+    //MÉTODO GENÉRICO PARA CREAR TOKENS
     private String buildToken(String email, String role) {
         Date now = new Date();
         Date expiry = new Date(now.getTime() + expirationMs);
@@ -65,10 +64,8 @@ public class JwtUtil {
                 .compact();
     }
 
-    // ===============================
-    // 📌 OBTENER CAMPOS DEL TOKEN
-    // ===============================
 
+    //OBTENER CAMPOS DEL TOKEN
     public String getUsernameFromToken(String token) {
         return getAllClaims(token).getSubject();
     }
@@ -77,10 +74,8 @@ public class JwtUtil {
         return getAllClaims(token).get("rol", String.class); // ← estaba "roll"
     }
 
-    // ===============================
-    // 📌 VALIDAR TOKEN
-    // ===============================
 
+    //VALIDAR TOKEN
     public boolean isTokenValid(String token) {
         try {
             return getAllClaims(token).getExpiration().after(new Date());

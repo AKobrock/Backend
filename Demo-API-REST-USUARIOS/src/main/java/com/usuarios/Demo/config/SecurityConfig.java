@@ -66,7 +66,7 @@ public class SecurityConfig {
     }
 
 
-    // ⭐ CORS CONFIG PARA SPRING SECURITY
+    //CORS CONFIG PARA SPRING SECURITY
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();

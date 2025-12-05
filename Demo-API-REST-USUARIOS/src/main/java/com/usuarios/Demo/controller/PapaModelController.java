@@ -1,6 +1,7 @@
 package com.usuarios.Demo.controller;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
@@ -114,7 +115,7 @@ public class PapaModelController {
     public ResponseEntity<?> eliminarPapa(@PathVariable UUID id) {
         try {
             String mensaje = papaModelService.papaFueAComprarCigarros(id);
-            return ResponseEntity.ok(mensaje);
+             return ResponseEntity.ok(Map.of("¡Este papá se fue a comprar cigarros!", mensaje));
         } catch (EntityNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (Exception e) {
